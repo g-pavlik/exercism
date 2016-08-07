@@ -1,6 +1,4 @@
 defmodule DNA do
-  @nucleotides [?A, ?C, ?G, ?T]
-
   @doc """
   Counts individual nucleotides in a DNA strand.
 
@@ -14,9 +12,7 @@ defmodule DNA do
   """
   @spec count([char], char) :: non_neg_integer
   def count(strand, nucleotide) do
-    if !Map.has_key?(%{?A => 0, ?T => 0, ?C => 0, ?G => 0}, nucleotide) do
-      raise ArgumentError
-    end
+    validate_nucleotide!(nucleotide)
     Map.get(histogram(strand), nucleotide)
   end
 
@@ -31,15 +27,27 @@ defmodule DNA do
   """
   @spec histogram([char]) :: map
   def histogram(strand) do
-    histogram = %{?A => 0, ?T => 0, ?C => 0, ?G => 0}
-
-    Enum.reduce(strand, histogram, &update_histogram/2)
+    Enum.reduce(strand, base_histogram, &update_histogram/2)
   end
 
+  @doc """
+  Increments nucleotide count in histogram by 1
+  """
   defp update_histogram(nucleotide, histogram) do
-    if !Map.has_key?(histogram, nucleotide) do
+    validate_nucleotide!(nucleotide)
+    Map.put(histogram, nucleotide, Map.get(histogram, nucleotide) + 1)
+  end
+
+  @doc """
+  Checks if nucleotide is on the list of existing nucleotides
+  """
+  defp validate_nucleotide!(nucleotide) do
+    if !Map.has_key?(base_histogram, nucleotide) do
       raise ArgumentError
     end
-    Map.put(histogram, nucleotide, Map.get(histogram, nucleotide) + 1)
+  end
+
+  defp base_histogram do
+    %{?A => 0, ?T => 0, ?C => 0, ?G => 0}
   end
 end
